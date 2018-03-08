@@ -32,8 +32,8 @@ prediction = data.loc[data['Y'].isnull()]
 print ('We have', len(training), 'training observations and', 
        len(prediction), 'prediction observations')
 
-train_y = training['Y'].as_matrix()
-train_X = training[[col for col in training.columns if col != 'Y']].as_matrix()
+train_y = training['Y'].values
+train_X = training[[col for col in training.columns if col != 'Y']].values
 
 
 # One out of K encoding for categorical value
@@ -83,14 +83,15 @@ kf = KFold(K, shuffle=True)
 ols_mse = np.ones((K))
 
 for i, (train_index, test_index) in enumerate(kf.split(X_train)):
-    print("TRAIN:", len(train_index), "TEST:", len(test_index))
-    X_train, X_test = X_train[train_index], X_test[test_index]
-    y_train, y_test = y_train[train_index],y_test[test_index]
-    [n_train, p_train], [n_test, p_test] = np.shape(X_train), np.shape(X_test)
+    # use _train_cv for the created subset of train and _val for the cv test
+    print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
+    X_train_cv, X_val = X_train[train_index], X_train[test_index]
+    y_train_cv, y_val = y_train[train_index], y_train[test_index]
+    [n_train_cv, p_train_cv], [n_val, p_val] = np.shape(X_train_cv), np.shape(X_val)
     
     # include intercept
-    off_train, off_test = np.ones(n_train), np.ones(n_test)
-    M_train, M_test = np.c_[off_train, X_train], np.c_[off_test, X_test] # Include offset / intercept
+    off_train_cv, off_val = np.ones(n_train_cv), np.ones(n_val)
+    M_train_cv, M_val = np.c_[off_train_cv, X_train_cv], np.c_[off_val, X_val] # Include offset / intercept
 
 
 # Ridge regression with k-fold cross validation
@@ -128,19 +129,21 @@ for i in range(1, K+1):
 kf = KFold(10)
 #kf.get_n_splits(X_train)
 
-for train_index, test_index in kf.split(X_train):
-    X_training_data, X_validation_data = X_train[train_index], X_test[test_index]
-    y_training_data, y_validation_data = y_train[train_index], y_test[test_index]
+for i, (train_index, test_index) in enumerate(kf.split(X_train)):
+    # use _train_cv for the created subset of train and _val for the cv test
+    print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
+    X_train_cv, X_val = X_train[train_index], X_train[test_index]
+    y_train_cv, y_val = y_train[train_index], y_train[test_index]
     
     for j in range(0, len(lambdas)):
         # Make the ridge model
         ridge = Ridge(alpha=lambdas[j], fit_intercept=False)
         
         # Fit ridge
-        ridge.fit(X_training_data, y_training_data)
+        ridge.fit(X_train_cv, y_train_cv)
         beta = ridge.coef_
         betas[(i-1), : , j] = beta
-        MSE[(i-1), j ] = np.mean((y_validation_data - np.matmul(X_validation_data, beta))**2)
+        MSE[(i-1), j ] = np.mean((y_val - np.matmul(X_val, beta))**2)
         
  
 meanMSE = np.mean(MSE, axis = 0)
