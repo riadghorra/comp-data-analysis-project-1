@@ -38,7 +38,8 @@ train_X = training[[col for col in training.columns if col != 'Y']].as_matrix()
 # One out of K encoding for categorical value
 train_X = oneOutOfK(train_X, 99)
 
-print(train_y.dtype, train_X.dtype)
+# Flag for what handling of missing values to use
+KNN_rpl = False
 
 
 # replace missing values with mean of column
@@ -48,8 +49,14 @@ train_X_mn = missing_predictor_as_mean(train_X)
 clean_data = missing_predictor_as_value(train_X, 0)
 train_X_knn = missing_predictor_as_knn(5, train_X, clean_data)
 
-# split Train / Test (70% / 30%) (for train_X with mean replacement)
-X_train, X_test, y_train , y_test= train_test_split(train_X_mn, train_y, test_size=0.3, random_state=0)
+test_split_ratio = 0.3
+
+if (KNN_rpl):
+    X_train, X_test, y_train , y_test= train_test_split(train_X_knn, train_y, test_size=test_split_ratio, random_state=0)
+else:
+    X_train, X_test, y_train , y_test= train_test_split(train_X_mn, train_y, test_size=test_split_ratio, random_state=0)
+
+# split Train / Test (70% / 30%) (for train_X)
 
 # First, we'll establish a baseline for the prediction with OLS 
 # on the data with NaN's replaced with the column's mean
@@ -65,7 +72,7 @@ yhat = np.matmul(M_test, beta)
 #residuals
 res = (y_test - yhat) ** 2
 
-print('MSE for OLS with mean replacement =', np.mean(res))
+print('MSE for OLS with {} replacement of NaN ='.format('knn' if KNN_rpl else 'mean'), np.mean(res))
 
 K = 2
 
