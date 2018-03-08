@@ -13,6 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from preprocessing import oneOutOfK, missing_predictor_as_mean, missing_predictor_as_value, missing_predictor_as_knn
+from sklearn.model_selection import KFold
+
 
 # load and display data
 data = pd.read_csv('Case1_Data.csv')
@@ -38,4 +40,17 @@ train_X_mn = missing_predictor_as_mean(train_X)
 # replace missing values with mean of KNN
 clean_data = missing_predictor_as_value(train_X, 0)
 train_X_knn = missing_predictor_as_knn(5, train_X, clean_data)
+
+# K - fold cross validation (for train_X with mean replacement)
+
+K = 10
+
+kf = KFold(K, shuffle=True)
+
+for train_index, test_index in kf.split(train_X_mean):
+    print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+
+
 
