@@ -22,7 +22,7 @@ def oneOutOfK(data, col_num, removeOriginal=True):
         data = np.append(data, new_col.reshape((n, 1)), axis=1)
     if removeOriginal:
         data = np.delete(data, col_num, axis=1)
-    return data
+    return data.astype(float)
 
 
 def missing_predictor_as_mean(training_data):
