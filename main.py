@@ -10,6 +10,7 @@ Created on Thu Mar  8 13:35:03 2018
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from preprocessing import oneOutOfK, missing_predictor_as_mean, missing_predictor_as_value, missing_predictor_as_knn
@@ -38,4 +39,8 @@ train_X_mn = missing_predictor_as_mean(train_X)
 # replace missing values with mean of KNN
 clean_data = missing_predictor_as_value(train_X, 0)
 train_X_knn = missing_predictor_as_knn(5, train_X, clean_data)
+
+
+#splitting the data into training and test
+X_train, X_test, Y_train, Y_test= train_test_split(train_X, train_y, test_size=0.3, random_state=0)
 
