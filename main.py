@@ -10,6 +10,7 @@ Created on Thu Mar  8 13:35:03 2018
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 from preprocessing import oneOutOfK, missing_predictor_as_mean, missing_predictor_as_value, missing_predictor_as_knn
@@ -41,6 +42,9 @@ train_X_mn = missing_predictor_as_mean(train_X)
 clean_data = missing_predictor_as_value(train_X, 0)
 train_X_knn = missing_predictor_as_knn(5, train_X, clean_data)
 
+# split Train / Test (70% / 30%)
+X_train, X_test, Y_train, Y_test= train_test_split(train_X, train_y, test_size=0.3, random_state=0)
+
 # K - fold cross validation (for train_X with mean replacement)
 
 K = 10
@@ -53,4 +57,6 @@ for train_index, test_index in kf.split(train_X_mean):
     y_train, y_test = y[train_index], y[test_index]
 
 
+
+#splitting the data into training and test
 
