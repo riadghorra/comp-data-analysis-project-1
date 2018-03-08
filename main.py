@@ -49,6 +49,7 @@ train_X_mn = missing_predictor_as_mean(train_X)
 clean_data = missing_predictor_as_value(train_X, 0)
 train_X_knn = missing_predictor_as_knn(5, train_X, clean_data)
 
+# split Train / Test (70% / 30%) (for train_X)
 test_split_ratio = 0.3
 
 if (KNN_rpl):
@@ -56,7 +57,6 @@ if (KNN_rpl):
 else:
     X_train, X_test, y_train , y_test= train_test_split(train_X_mn, train_y, test_size=test_split_ratio, random_state=0)
 
-# split Train / Test (70% / 30%) (for train_X)
 
 # First, we'll establish a baseline for the prediction with OLS 
 # on the data with NaN's replaced with the column's mean
