@@ -99,12 +99,14 @@ for i, (train_index, test_index) in enumerate(kf.split(X_train)):
 n, p = X_train.shape
 
 k = 100; # try k values of lambda
-lambdas = np.logspace(-4, 3, k)
+lambdas = np.linspace(0, 5, k)
 
 # Number of folds
 K = 10   
 
 betas = np.zeros((k, p, k)) # all variable estimates
+training_error = np.zeros((K, k))
+testing_error =  np.zeros((K, k))
 MSE = np.zeros((K, k))
 
 # Actual manual failing cross-validation
@@ -131,7 +133,7 @@ kf = KFold(10)
 
 for i, (train_index, test_index) in enumerate(kf.split(X_train)):
     # use _train_cv for the created subset of train and _val for the cv test
-    print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
+    # print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
     X_train_cv, X_val = X_train[train_index], X_train[test_index]
     y_train_cv, y_val = y_train[train_index], y_train[test_index]
     
@@ -144,9 +146,17 @@ for i, (train_index, test_index) in enumerate(kf.split(X_train)):
         beta = ridge.coef_
         betas[(i-1), : , j] = beta
         MSE[(i-1), j ] = np.mean((y_val - np.matmul(X_val, beta))**2)
-        
+        training_error[(i-1), j ] = np.mean((y_train - np.matmul(X_train, beta))**2)
+        testing_error[(i-1), j ] = np.mean((y_val - np.matmul(X_val, beta))**2)
  
+
+
+mean_test_error = np.mean(testing_error, axis=0)
+mean_training_error = np.mean(training_error, axis=0)
+
 meanMSE = np.mean(MSE, axis = 0)
 jOpt = np.argsort(meanMSE)[0]
-
 lambda_OP = lambdas[jOpt]
+
+p#lt.plot(lambdas, mean_training_error, color="green")
+plt.plot(lambdas, mean_test_error, color="blue")
