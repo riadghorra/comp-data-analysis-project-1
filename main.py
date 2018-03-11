@@ -104,12 +104,12 @@ for i, (train_index, test_index) in enumerate(kf.split(X_train)):
 n, p = X_train.shape
 
 k = 100; # try k values of lambda
-lambdas = np.linspace(0, 5, k)
+lambdas = np.linspace(0, 100, k)
 
 # Number of folds
 K = 10   
 
-betas = np.zeros((k, p, k)) # all variable estimates
+betas = np.zeros((K, p, k)) # all variable estimates
 training_error = np.zeros((K, k))
 testing_error =  np.zeros((K, k))
 MSE = np.zeros((K, k))
@@ -176,5 +176,16 @@ lambda_OP = lambdas[jOpt]
 lambda_OP_RMSE = lambdas[jOpt_rmse]
 
 print('The optimal RMSE for ridge is with lambda =', lambda_OP_RMSE, 'and has RMSE of', np.min(RMSE_ridge))
-#lt.plot(lambdas, mean_training_error, color="green")
+plt.plot(lambdas, mean_training_error, color="green")
 plt.plot(lambdas, mean_test_error, color="blue")
+plt.show()
+
+# average betas over 10 folds
+mean_betas = np.mean(betas, axis=0)
+
+plt.figure()
+plt.semilogx(lambdas, mean_betas.T )
+plt.xlabel("Lambdas")
+plt.ylabel("Betas")
+plt.title("Regularized beta estimates")
+
