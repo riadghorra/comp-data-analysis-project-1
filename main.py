@@ -18,6 +18,10 @@ from preprocessing import oneOutOfK, missing_predictor_as_mean, missing_predicto
 from sklearn.model_selection import KFold
 import scipy.linalg as lng
 
+def RMSE (y, yhat):
+    '''Calculates the relative mean squared error based of
+    the predicted y-values and the correct ones.'''
+    return np.sqrt(np.mean((y - yhat)**2)) / np.sqrt(np.mean((y - np.mean(y))**2))
 
 
 # load and display data
@@ -73,7 +77,8 @@ yhat = np.matmul(M_test, beta)
 #residuals
 res = (y_test - yhat) ** 2
 
-print('MSE for OLS with {} replacement of NaN ='.format('knn' if KNN_rpl else 'mean'), np.mean(res))
+
+print('RMSE for OLS with {} replacement of NaN ='.format('knn' if KNN_rpl else 'mean'),  RMSE(y_test, yhat))
 
 K = 2
 
@@ -84,7 +89,7 @@ ols_mse = np.ones((K))
 
 for i, (train_index, test_index) in enumerate(kf.split(X_train)):
     # use _train_cv for the created subset of train and _val for the cv test
-    print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
+    # print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
     X_train_cv, X_val = X_train[train_index], X_train[test_index]
     y_train_cv, y_val = y_train[train_index], y_train[test_index]
     [n_train_cv, p_train_cv], [n_val, p_val] = np.shape(X_train_cv), np.shape(X_val)
@@ -106,6 +111,7 @@ K = 10
 
 betas = np.zeros((k, p, k)) # all variable estimates
 MSE = np.zeros((K, k))
+RMSE_ridge = np.zeros((K, k))
 
 # Actual manual failing cross-validation
 '''
@@ -131,7 +137,7 @@ kf = KFold(10)
 
 for i, (train_index, test_index) in enumerate(kf.split(X_train)):
     # use _train_cv for the created subset of train and _val for the cv test
-    print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
+    # print("TRAIN CV:", len(train_index), "VAL:", len(test_index))
     X_train_cv, X_val = X_train[train_index], X_train[test_index]
     y_train_cv, y_val = y_train[train_index], y_train[test_index]
     
@@ -143,10 +149,18 @@ for i, (train_index, test_index) in enumerate(kf.split(X_train)):
         ridge.fit(X_train_cv, y_train_cv)
         beta = ridge.coef_
         betas[(i-1), : , j] = beta
-        MSE[(i-1), j ] = np.mean((y_val - np.matmul(X_val, beta))**2)
-        
+        y_hat = np.matmul(X_val, beta)
+        MSE[(i-1), j ] = np.mean((y_val - y_hat)**2)
+        RMSE_ridge[(i-1), j ] = RMSE(y_val, y_hat)
  
 meanMSE = np.mean(MSE, axis = 0)
 jOpt = np.argsort(meanMSE)[0]
 
+meanRMSE = np.mean(RMSE_ridge, axis = 0)
+jOpt_rmse = np.argsort(meanRMSE)[0]
+
+
 lambda_OP = lambdas[jOpt]
+lambda_OP_RMSE = lambdas[jOpt_rmse]
+
+print('The optimal RMSE for ridge is with lambda =', lambda_OP_RMSE, 'and has RMSE of', np.min(RMSE_ridge))
