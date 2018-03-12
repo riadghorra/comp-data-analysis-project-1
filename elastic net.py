@@ -16,85 +16,16 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 # Exercises for lecture 3 in 02582, lars
 
-# Helper functions for data handling
-def center(X):
-    """ Center the columns (variables) of a data matrix to zero mean.
-        
-        X, MU = center(X) centers the observations of a data matrix such that each variable
-        (column) has zero mean and also returns a vector MU of mean values for each variable.
-     """ 
-    n = X.shape[0]
-    mu = np.mean(X,0)
-    X = X - np.ones((n,1)) * mu
-    return X, mu
 
-def normalize(X):
-    """Normalize the columns (variables) of a data matrix to unit Euclidean length.
-    X, MU, D = normalize(X)
-    i) centers and scales the observations of a data matrix such
-    that each variable (column) has unit Euclidean length. For a normalized matrix X,
-    X'*X is equivalent to the correlation matrix of X.
-    ii) returns a vector MU of mean values for each variable.
-    iii) returns a vector D containing the Euclidean lengths for each original variable.
-    
-    See also CENTER
-    """
-    
-    n = np.size(X, 0)
-    X, mu = center(X)
-    d = np.linalg.norm(X, ord = 2, axis = 0)
-    d[np.where(d==0)] = 1
-    X = np.divide(X, np.ones((n,1)) * d)
-    return X, mu, d
 
-def normalizetest(X,mx,d):
-    """Normalize the observations of a test data matrix given the mean mx and variance varx of the training.
-       X = normalizetest(X,mx,varx) centers and scales the observations of a data matrix such that each variable
-       (column) has unit length.
-       Returns X: the normalized test data"""
-    
-    n = X.shape[0]
-    X = np.divide(np.subtract(X, np.ones((n,1))*mx), np.ones((n,1)) * d)
-    return X
-
-data = pd.read_csv('Case1_Data-bis.csv')
+data = pd.read_csv('Case1_Data.csv')
 
 training = data.loc[data['Y'].notnull()]
 prediction = data.loc[data['Y'].isnull()]
 train_y = training['Y'].as_matrix()
 train_X = training[[col for col in training.columns if col != 'Y']].as_matrix()
 
-# data preprocessing
 
-def oneOutOfK(data, col_num, removeOriginal=True):
-    '''Takes the column specified and created one 
-    out of K binary columns for the values in that
-    column. If removeOriginal is set to True, the 
-    original column will be taken out of the data.
-    Returns a numpy array.'''
-    [n, p] = data.shape
-    values = data[:, col_num]
-    new_cols = sorted(list(set(values)))
-    for col in new_cols:
-        new_col = np.array([1 if row[col_num] == col else 0 for row in data])
-        data = np.append(data, new_col.reshape((n, 1)), axis=1)
-    if removeOriginal:
-        data = np.delete(data, col_num, axis=1)
-    return data
-   
-def missing_value_as_mean(training_data):
-    data = training_data
-    for i, column in enumerate(data.T[:-1,:]):
-            # column = train_X[column].as_matrix()
-            column_without_nan = column[~np.isnan(np.array(column, dtype=float))]
-            column_mean = column_without_nan.mean()
-            # print( column_without_nan.mean() )
-            for predictor_index in range(len(column)):
-                if pd.isnull(np.array(column[predictor_index], dtype=float)):
-                    column[predictor_index] = column_mean
-
-            data.T[i, :] = column
-    return data
 
 train_X = oneOutOfK(train_X, 99)
 train_X = missing_value_as_mean(train_X)
