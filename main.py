@@ -101,7 +101,7 @@ for i, (train_index, test_index) in enumerate(kf.split(X_train)):
 n, p = X_train.shape
 
 k = 100; # try k values of lambda
-lambdas = np.linspace(0, 100, k)
+lambdas = np.linspace(0, 1000, k)
 
 # Number of folds
 K = 10   
